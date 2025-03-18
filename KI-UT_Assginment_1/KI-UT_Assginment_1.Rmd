@@ -1,0 +1,477 @@
+---
+title: "KI-UT_Assginment_1"
+author: "Dongchen He"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+    toc: yes
+    number_sections: no
+  html_document:
+    toc: yes
+    df_print: paged
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load Dependencies
+
+```{r, results='hide'}
+library(ggplot2)
+library(tidyverse)
+library(airway)
+library(prettydoc)
+library(svglite)
+library(tidybiology)
+```
+
+# Task1
+
+## 2.a
+What is the medically relevant insight from the article?
+
+The article introduces ChromBERT, a BERT-based model designed to analyze chromatin state sequences, revealing conserved motifs that regulate gene expression and cellular identity. Key findings include identifying chromatin state patterns linked to highly expressed genes, enhancers, and genic regions—and discovering specific promoter motifs predictive of strong gene activity. Employing Dynamic Time Warping (DTW) clustering, the study enhances chromatin motif detection by accommodating sequence variability, paving the way for deeper understanding of epigenetic regulation and creating potential applications in disease diagnostics and epigenetic therapeutic development.
+
+## 2.b
+Which genomics technology/ technologies were used?
+
+The genomics technologies used in the study include ChromHMM for chromatin state annotation and ChIP-seq for generating genome-wide datasets of histone modifications. Additionally, data from large-scale epigenomic databases such as ROADMAP, ENCODE, and IHEC were utilized. The novel computational approach, ChromBERT, adapted the BERT model for analyzing chromatin state sequences, leveraging pretraining and fine-tuning on chromatin state data. Dynamic Time Warping (DTW) was also applied for clustering chromatin state motifs.
+
+## 3.a
+List and explain at least three questions/ hypotheses you can think of that extend the analysis presented in the paper.
+
+1. What are the differences in chromatin state motifs among various cell types and tissues?
+2. How do chromatin state patterns correlate with disease-associated genomic regions?
+3. Can chromatin state motifs predict long-range 3D genomic interactions?
+
+## 3.b
+Devise a computational analysis strategy for (some of) the listed questions under 3a.
+
+We can leverage ChromBERT’s advanced capabilities to analyze chromatin state annotations across diverse datasets, enabling us to identify cell-type-specific motifs, uncover disease-associated chromatin patterns, and predict long-range genomic interactions. By fine-tuning the model for specific tasks and utilizing various clustering methods, researchers can detect conserved or variable chromatin state sequences that reveal key insights into gene regulation, cellular identity, and the epigenetic basis of diseases.
+
+# Task4
+
+```{r}
+cat('Square root of 10:', sqrt(10), '\n')
+cat('Logarithm of 32 to the base 2:', log(32, 2), '\n')
+cat('Sum of numbers from 1 to 1000', sum(1:1000), '\n')
+cat('Sum of even numbers from 2 to 1000', sum(seq(2,1000,by = 2)), '\n')
+cat('Number of pairwise comparisons for 100 genes:', choose(100, 2), '\n')
+cat('Number of ways to arrange 100 genes in triples:', choose(100 ,3), '\n')
+```
+
+# Task5
+
+## CO2 dataset
+
+```{r}
+data(CO2)
+help(CO2)
+```
+
+CO2 dataset description:
+
+The CO2 data frame has 84 rows and 5 columns of data from an experiment on the cold tolerance of the grass species Echinochloa crus-galli.
+
+The CO2 uptake of six plants from Quebec and six plants from Mississippi was measured at several levels of ambient CO2 concentration. Half the plants of each type were chilled overnight before the experiment was conducted.
+
+This dataset was originally part of package nlme, and that has methods (including for [, as.data.frame, plot and print) for its grouped-data classes.
+
+```{r}
+quebec_uptake <- CO2$uptake[CO2$Type == 'Quebec']
+mississippi_uptake <- CO2$uptake[CO2$Type == 'Mississippi']
+cat('Quebec Plant CO2 uptake - Average:', mean(quebec_uptake), 'Median:', median(quebec_uptake), '\n')
+cat('Mississippi Plant CO2 uptake - Average:', mean(mississippi_uptake), 'Median:', median(mississippi_uptake), '\n')
+```
+
+## Airway dataset
+
+```{r}
+data(airway)
+cat('Number of genes expressed in each sample:\n')
+print(colSums(assay(airway) > 0) )
+cat('Number of genes not expressed in any sample:\n')
+print(sum(rowSums(assay(airway) > 0) == 0))
+```
+
+# Task6
+
+```{r}
+ratio_mean_median <- function(x) {
+  if (!is.numeric(x)){
+    stop('Input must be a numeric vector.')
+  }
+  
+  if (median(x) == 0){
+    stop('Median is zero, by which divsion is not possible.')
+  }
+  
+  return(mean(x)/median(x))
+}
+
+exp_vec <- c(1,2,3,4,5,7)
+result <- ratio_mean_median(exp_vec)
+cat('The ratio of the mean to the median of (1,2,3,4,5,7):', result, '\n')
+
+trimmed_mean <- function(x){
+  if (!is.numeric(x)){
+    stop('Input must be a numeric vector.')
+  }
+  if (length(x) < 3){
+    stop('Input must have at least three values to ignore the highest and lowest.')
+  }
+  
+  trimmed <- x[!(x %in% range(x))]
+  return(mean(trimmed))
+}
+
+result <- trimmed_mean(exp_vec)
+cat('The mean of (1,2,3,4,5,7) after ignoring the lowest and the highest value:', result, '\n')
+
+```
+
+3. Write a short explanation of why, how, and when not to use pipes.
+
+Pipes(%>%) is a powerful tool for clearly expressing a sequence of multiple operations.
+Avoid using pipes for long pipelines (>10 steps), multiple inputs/outputs, or complex dependencies.
+In these situations, use intermediate variables for clarity and debugging or choose a more explicit code structure to avoid confusion.
+
+4. Write a short explanation of why the apply-family of functions could be useful in your work.
+
+The apply-family simplifies repetitive tasks over various data structures. They replace loops, make code concise and faster. It could be efficient using them for aggregation, transformation, simulations or element-wise operations.
+
+# Task7
+
+## 1.a
+
+```{r}
+magic_guys <- read.csv('./Week1-dataforTask7/magic_guys.csv', header = T)
+# Using base R's hist() function
+# Histogram for 'length'
+hist(magic_guys$length, 
+     breaks = 20, 
+     col = "skyblue", 
+     main = "Length Distribution", 
+     xlab = "Length")
+
+hist(magic_guys$length, 
+     breaks = 10, 
+     col = "skyblue", 
+     main = "Length Distribution", 
+     xlab = "Length")
+
+hist(magic_guys$length, 
+     breaks = 5, 
+     col = "skyblue", 
+     main = "Length Distribution", 
+     xlab = "Length")
+
+# Histogram for 'weight'
+hist(magic_guys$weight, 
+     breaks = 30, 
+     col = "lightgreen", 
+     main = "Weight Distribution", 
+     xlab = "Weight")
+
+hist(magic_guys$weight, 
+     breaks = 40, 
+     col = "lightgreen", 
+     main = "Weight Distribution", 
+     xlab = "Weight")
+
+hist(magic_guys$weight, 
+     breaks = 10, 
+     col = "lightgreen", 
+     main = "Weight Distribution", 
+     xlab = "Weight")
+
+
+
+```
+
+As for length, the distribution oversimplifies when the number of breaks is set to 5 and becomes a little noisy when set to 20. Henceforth ~10 may be a better choice. As for weight, I personally think that the distribution of two species is already well demonstrated under 10 breaks.
+
+```{r}
+# Using ggplot2
+# Histogram for 'length'
+ggplot(magic_guys, aes(x = length)) +
+  geom_histogram(bins = 10, fill = "steelblue", color = "black") +
+  ggtitle("Length Distribution") +
+  theme_minimal()
+
+# Histogram for 'weight'
+ggplot(magic_guys, aes(x = weight)) +
+  geom_histogram(bins = 10, fill = "darkorange", color = "white") +
+  ggtitle("Weight Distribution") +
+  theme_light()
+
+# Weight distributions by species
+ggplot(magic_guys, aes(x = weight, fill = species)) +
+  geom_histogram(position = "identity",  bins = 10, color = 'black') +
+  ggtitle("Weight Distribution by Species") +
+  theme_minimal() +
+  scale_fill_manual(values = c('skyblue','red'))
+
+```
+
+
+## 1.b
+
+```{r}
+# Using base R's boxplot() function
+# Boxplot for 'length'
+boxplot(length ~ species, 
+        data = magic_guys, 
+        col = c("skyblue", "tomato"), 
+        main = "Length by Species")
+legend("topright", legend = c("Jedi", "Sith"), fill = c("skyblue", "tomato"))
+
+# Boxplot for 'weight'
+boxplot(weight ~ species, 
+        data = magic_guys, 
+        col = c("chartreuse", "pink"), 
+        main = "Weight by Species")
+legend("topright", legend = c("Jedi", "Sith"), fill = c('chartreuse', "pink"))
+
+```
+
+```{r}
+# Using ggplot2
+# Boxplot for 'length'
+ggplot(magic_guys, aes(x = species, y = length, fill = species)) +
+  geom_boxplot() +
+  ggtitle("Length by Species") +
+  scale_fill_manual(values = c("skyblue", "tomato")) +
+  theme_minimal()
+
+# Boxplot for 'weight'
+ggplot(magic_guys, aes(x = species, y = weight, fill = species)) +
+  geom_boxplot() +
+  ggtitle("Weight by Species") +
+  scale_fill_manual(values = c('chartreuse', "pink")) +
+  theme_minimal()
+
+```
+
+## 1.c
+
+```{r}
+
+p <- ggplot(magic_guys, aes(x = species, y = length, fill = species)) +
+  geom_boxplot() +
+  ggtitle("Length by Species") +
+  scale_fill_manual(values = c("skyblue", "tomato")) +
+  theme_minimal()
+
+# PNG
+ggsave("Boxplot of Length by Species.png", p, width = 8, height = 6, dpi = 300)
+
+# PDF
+ggsave("Boxplot of Length by Species.pdf", p, width = 8, height = 6)
+
+# SVG
+ggsave("Boxplot of Length by Species.svg", p, width = 8, height = 6)
+
+```
+
+Usage Scenarios of Different Formats:
+
+Use PNG for presentations, blogs, or websites where raster images suffice.
+
+Use PDF for printing documents and embedding high-quality graphics in academic papers or LaTeX.
+
+Use SVG for web-based applications, interactive graphics, or when there's need to edit the plot in vector graphics software.
+
+## 2.a
+
+```{r}
+microarray <- read.table("./Week1-dataforTask7/microarray_data.tab", sep = "\t", header = TRUE)
+
+# Determine the size of the matrix
+dim_microarray <- dim(microarray)
+cat("The matrix has", dim_microarray[1], "rows and", dim_microarray[2], "columns.\n")
+```
+
+## 2.b
+
+```{r}
+
+missing_per_gene <- colSums(is.na(microarray))
+
+missing_data <- data.frame(Gene = colnames(microarray),
+                           MissingCount = missing_per_gene)
+
+ggplot(missing_data, aes(x = MissingCount)) +
+  geom_histogram(binwidth = 1, fill = "darkorange") +
+  ggtitle("Distribution of Missing Values per Gene") +
+  xlab("Number of Missing Values") +
+  theme_minimal()
+
+```
+
+## 2.c
+
+```{r}
+missing_percentage <- (missing_per_gene / nrow(microarray)) * 100
+
+genes_10_percent <- colnames(microarray)[missing_percentage > 10]
+cat("Genes with more than 10% missing values:\n")
+print(genes_10_percent)
+
+genes_20_percent <- colnames(microarray)[missing_percentage > 20]
+cat("Genes with more than 20% missing values:\n")
+print(genes_20_percent)
+
+genes_50_percent <- colnames(microarray)[missing_percentage > 50]
+cat("Genes with more than 50% missing values:\n")
+print(genes_50_percent)
+```
+
+## 2.d
+
+```{r}
+
+imputed_microarray <- microarray
+
+for (gene in colnames(microarray)) {
+  if (all(is.na(microarray[[gene]]))) {
+    imputed_microarray[[gene]] <- 0
+  } else {
+    mean <- mean(microarray[[gene]], na.rm = T)
+    imputed_microarray[[gene]][is.na(microarray[[gene]])] <- mean
+  }
+}
+
+cat("Number of missing values after replacement:", sum(is.na(imputed_microarray)), "\n")
+
+```
+
+## 3
+
+```{r}
+# Boxplot of CO2 Uptake by Treatment
+ggplot(CO2, aes(x = Treatment, y = uptake, fill = Treatment)) +
+  geom_boxplot() +
+  ggtitle("CO2 Uptake by Treatment") +
+  theme_minimal() +
+  scale_fill_manual(values = c("orange", "green"))
+
+t.test(uptake ~ Treatment, data = CO2)
+
+```
+
+It is inferred that chilling treatment significantly decreased CO2 uptake in plants (p = 0.003107 < 0.05, t-test), indicating a negative impact on photosynthetic efficiency.
+
+# Task8
+
+## 1.a
+
+```{r}
+data(chromosome)
+
+summary_stats <- chromosome %>%
+  summarise(
+    mean_variations = mean(variations, na.rm = T),
+    median_variations = median(variations, na.rm = T),
+    max_variations = max(variations, na.rm = T),
+    
+    mean_protein_coding_genes = mean(`protein_codinggenes`, na.rm = T),
+    median_protein_coding_genes = median(`protein_codinggenes`, na.rm = T),
+    max_protein_coding_genes = max(`protein_codinggenes`, na.rm = T),
+    
+    mean_miRNAs = mean(mi_rna, na.rm = T),
+    median_miRNAs = median(mi_rna, na.rm = T),
+    max_miRNAs = max(mi_rna, na.rm = T)
+  )
+
+print(summary_stats)
+```
+
+## 1.b
+
+```{r}
+
+ggplot(chromosome, aes(x = length_mm)) +
+  geom_histogram(binwidth = 10, fill = "steelblue", color = "black") +
+  ggtitle("Distribution of Chromosome Sizes") +
+  xlab("Chromosome Size (mm)") +
+  theme_minimal()
+
+```
+
+## 1.c
+
+```{r}
+# Scatterplot of chromosome length vs protein coding genes
+ggplot(chromosome, aes(x = length_mm, y = protein_codinggenes)) +
+  geom_point(color = "blue", alpha = 0.7) +
+  geom_smooth(method = "lm", color = "red", se = FALSE) +  
+  ggtitle("Chromosome Length vs Protein-Coding Genes") +
+  xlab("Chromosome Length (mm)") +
+  ylab("Number of Protein-Coding Genes") +
+  theme_minimal()
+
+cor_length_protein_pearson <- cor(chromosome$length_mm, chromosome$protein_codinggenes, method = "pearson")
+cat("Pearson Correlation between Chromosome Length and Protein-Coding Genes:", cor_length_protein_pearson, "\n")
+```
+
+```{r}
+# Scatterplot of chromosome length vs miRNAs
+ggplot(chromosome, aes(x = length_mm, y = mi_rna)) +
+  geom_point(color = "darkgreen", alpha = 0.7) +
+  geom_smooth(method = "lm", color = "orange", se = FALSE) +  # Add a linear trendline
+  ggtitle("Chromosome Length vs miRNAs") +
+  xlab("Chromosome Length (mm)") +
+  ylab("Number of miRNAs") +
+  theme_minimal()
+
+cor_length_protein_pearson <- cor(chromosome$length_mm, chromosome$mi_rna, method = "pearson")
+cat("Pearson Correlation between Chromosome Length and miRNAs:", cor_length_protein_pearson, "\n")
+```
+The number of protein-coding genes shows a moderate positive correlation with chromosome length (r = 0.61, Pearson). In contrast, the number of miRNAs demonstrates a stronger positive correlation with chromosome length (r = 0.74, Pearson).
+
+## 1.d
+
+```{r}
+data(proteins)
+
+summary_stats <- proteins %>%
+  summarise(
+    mean_length = mean(length, na.rm = T),
+    median_length = median(length, na.rm = T),
+    max_length = max(length, na.rm = T),
+    
+    mean_mass = mean(mass, na.rm = T),
+    median_mass = median(mass, na.rm = T),
+    max_mass = max(mass, na.rm = T)
+  )
+
+print(summary_stats)
+
+# Scatterplot of protein length vs mass
+pearson_corr <- cor(proteins$length, proteins$mass, method = "pearson")
+ggplot(proteins, aes(x = length, y = mass, color = mass)) +
+  geom_point(size = 3) + 
+  geom_smooth(method = "lm", se = TRUE, color = "black", linetype = "dashed", size = 1) +
+  annotate("text", x = max(proteins$length) * 0.2, 
+           y = max(proteins$mass) * 0.8,
+           label = paste0("Pearson Correlation: ", round(pearson_corr, 5)),
+           color = "black", size = 5, hjust = 0) +
+  scale_color_gradient(low = "skyblue", high = "red") +  
+  labs(
+    title = "Relationship Between Protein Length and Mass",
+    x = "Protein Length",
+    y = "Protein Mass",
+    color = "Mass"
+  ) +
+  theme_minimal() 
+
+
+```
+
+The pearson correlation is about 0.99917, showing a significantly strong positive correlation between protein length and mass.
